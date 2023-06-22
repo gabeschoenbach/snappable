@@ -1,6 +1,6 @@
 from IPython.display import display, clear_output
-from gerrychain import Partition
-from gerrychain.grid import Grid
+# from gerrychain import Partition
+# from gerrychain.grid import Grid
 import matplotlib.pyplot as plt
 import networkx as nx
 from tqdm import tqdm
