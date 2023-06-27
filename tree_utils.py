@@ -62,15 +62,18 @@ def find_balance_edge(tree, d=0):
     '''
     ideal_size = len(tree) / 2
     balance_edges = set()
+    split_graph = tree.copy()
     for (u, v) in tree.edges:
-        split_graph = tree.copy()
         split_graph.remove_edge(u, v)
         components = nx.connected_components(split_graph)
         for component in components:
             if len(component) >= ideal_size - d and len(component) <= ideal_size + d: # clean up 
                 balance_edges.add((u,v))
+                if d == 0:
+                    return balance_edges
+            break
+        split_graph.add_edge(u, v)
     return balance_edges
-
 
 ##### Sampling STs functions #####
 
@@ -122,6 +125,14 @@ def random_minimum_spanning_tree(graph):
     return MST
 
 ##### Enumeration helper functions #####
+
+def generate_grid_graph(N):
+    g = nx.grid_graph(dim=(N,N))
+    # nx.relabel_nodes(g, {node: (N * node[0]) + node[1] + 1 for node in g.nodes}, copy=False)
+    for edge in g.edges:
+        u, v = edge
+        g[u][v]['weight'] = 1
+    return g
 
 def generate_ST(dim, seed=0):
     '''
