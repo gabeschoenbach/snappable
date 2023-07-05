@@ -1,4 +1,5 @@
 from IPython.display import display, clear_output
+from networkx.algorithms.tree.mst import SpanningTreeIterator
 # from gerrychain import Partition
 # from gerrychain.grid import Grid
 import matplotlib.pyplot as plt
@@ -27,7 +28,7 @@ def draw(graph, delay=0, erase=True, edge_colors=None, node_colors=None):
         edge_colors = [graph[u][v]['colors'] for u,v,c in graph.edges(data=True)]
     else:
         edge_colors = ['black' for u,v in graph.edges()]
-    nx.draw(graph, 
+    nx.draw(graph,
             pos={(x,y): (x, y) for x,y in graph.nodes()},
             width=2,
             with_labels=False,
@@ -67,7 +68,7 @@ def find_balance_edge(tree, d=0):
         split_graph.remove_edge(u, v)
         components = nx.connected_components(split_graph)
         for component in components:
-            if len(component) >= ideal_size - d and len(component) <= ideal_size + d: # clean up 
+            if len(component) >= ideal_size - d and len(component) <= ideal_size + d: # clean up
                 balance_edges.add((u,v))
                 if d == 0:
                     return balance_edges
@@ -105,14 +106,14 @@ def uniform_random_spanning_tree(graph, choice=random.choice):
     assert len(G.nodes) == len(graph.nodes)
     assert len(G.edges) == len(G.nodes) - 1
     assert nx.number_connected_components(G) == 1
-    
+
     G = make_ST_from_tup(tup(G))
 
     return G
 
 def random_minimum_spanning_tree(graph):
     '''
-    Assign edge weights to a graph uniformly at random, then draw a 
+    Assign edge weights to a graph uniformly at random, then draw a
     minimum spanning tree using networkx's algo.
     Input: Networkx graph.
     Output: An MST on the graph.
@@ -120,7 +121,7 @@ def random_minimum_spanning_tree(graph):
     for (u, v, w) in graph.edges(data=True):
         w['weight'] = random.uniform(0,1)
     MST = nx.minimum_spanning_tree(graph)
-    
+
     MST = make_ST_from_tup(tup(MST))
     return MST
 
@@ -161,12 +162,12 @@ def tup(ST):
 def get_dim_of_tup(t):
     '''
     Returns the dimensions of the graph whose edges had given us
-    the input, a tup. 
+    the input, a tup.
     '''
     max_x1s = max([x1 for ((x1,y1), (x2,y2)) in t])
     max_x2s = max([x2 for ((x1,y1), (x2,y2)) in t])
     max_y1s = max([y1 for ((x1,y1), (x2,y2)) in t])
-    max_y2s = max([y2 for ((x1,y1), (x2,y2)) in t])   
+    max_y2s = max([y2 for ((x1,y1), (x2,y2)) in t])
     return (max(max_y1s, max_y2s) + 1, max(max_x1s, max_x2s) + 1)
 
 def make_ST_from_tup(t):
@@ -211,7 +212,7 @@ def find_neighboring_STs(ST, seen_STs):
     Given a spanning tree, returns a list of neighboring spanning trees.
     '''
     neighboring_STs = []
-    
+
     empty_edges = find_empty_edges(ST)
     for edge in ST.edges():
         ST.remove_edge(edge[0], edge[1]) # should I make a copy or can I use ST?
@@ -242,7 +243,7 @@ def enumerate_STs(dim, seed=0):
     neighbors = {
         0:[tup(seed)]
     }
-    
+
     seen_STs = set()
     for i in range(1,20):
         for ST_tup in neighbors[i-1]:
@@ -253,15 +254,15 @@ def enumerate_STs(dim, seed=0):
             ST = make_ST_from_tup(ST_tup)
             neighboring_STs += find_neighboring_STs(ST, seen_STs)
             neighboring_STs = list(set(neighboring_STs))
-            
+
             clear_output(wait=True)
             summarize(i, neighbors, neighboring_STs)
-        
+
         neighbors[i] = neighboring_STs
-    
+
         if len(neighboring_STs) == 0:
             return neighbors
-    
+
     return neighbors
 
 ##### Counting the number of spanning trees
@@ -271,7 +272,7 @@ def delete_from_csr(mat, row_indices=[], col_indices=[]):
     Removes user-specified rows/columns from a CSR,
     used for find_NST(), taken from https://tinyurl.com/y3szqual.
     Input: csr_matrix (from scipy.sparse)
-    Output: csr_matrix 
+    Output: csr_matrix
     '''
     rows = []
     cols = []
@@ -296,12 +297,12 @@ def delete_from_csr(mat, row_indices=[], col_indices=[]):
         return mat[:,mask]
     else:
         return mat
-    
+
 def find_NST(graph):
     '''
     NEED TO CHANGE THIS TO PARKER'S FUNCTION!
     To find the number of spanning trees on a graph, build the
-    Laplacian matrix (will be a sparse matrix), delete the first 
+    Laplacian matrix (will be a sparse matrix), delete the first
     row and column, and take the determinant.
     Input: Networkx graph.
     Output: Int.
@@ -312,7 +313,7 @@ def find_NST(graph):
     NST = round(np.linalg.det(lap))
     return NST
 
-##### Distributions of spanning tree algos ##### 
+##### Distributions of spanning tree algos #####
 
 def unpack_enumerated_STs(neighbors):
     '''
@@ -351,7 +352,7 @@ def plot_sampled_STs(STs, data, save=None):
 
     dim = tree_utils.get_dim_of_tup(STs[0])
     ax.set_title(f"Distribution of STs on {dim[0]}x{dim[1]} grid -- {len(data)} samples", fontsize=20)
-    ax.hist(data, 
+    ax.hist(data,
                alpha=1,
                bins=np.arange(0, len(STs)+1),
                density=True)
@@ -366,7 +367,7 @@ def plot_sampled_STs(STs, data, save=None):
 
     dim = get_dim_of_tup(STs[0])
     ax.set_title(f"Distribution of STs on {dim[0]}x{dim[1]} grid -- {len(data)} samples", fontsize=20)
-    ax.hist(data, 
+    ax.hist(data,
                alpha=1,
                bins=np.arange(0, len(STs)+1),
                density=True)
@@ -391,7 +392,7 @@ def load_partitions(n):
 
 def make_assignment_dicts(n):
     '''
-    Returns a list of every possible node-to-district 
+    Returns a list of every possible node-to-district
     assignment on the nXn grid.
     '''
     assignment_dicts = []
@@ -462,3 +463,241 @@ def compute_cut_edges(partitions):
         ce = cut_edges(partition)
         ces.append(ce)
     return ces
+
+### Grid-Graph experiments
+def generate_grid_graph(dims, queen=False):
+    g = nx.grid_graph(dim=dims)
+    # nx.relabel_nodes(g, {node: (N * node[0]) + node[1] + 1 for node in g.nodes}, copy=False)
+    for edge in g.edges:
+        u, v = edge
+        g[u][v]['weight'] = 1
+
+    if queen:
+        for i in range(dims[1]-1):
+            for j in range(dims[0]):
+                if j<(dims[0]-1):
+                    g.add_edge((i,j),(i+1,j+1))
+                    g[(i,j)][(i+1,j+1)]['weight'] = 1
+                if j >0:
+                    g.add_edge((i,j),(i+1,j-1))
+                    g[(i,j)][(i+1,j-1)]['weight'] = 1
+    return g
+
+def enumerate_all_trees(g):
+    trees = SpanningTreeIterator(g)
+    trees = []
+    for tree in tqdm(SpanningTreeIterator(g)):
+        trees.append(tree)
+    return trees
+
+def sample_trees(g, func, N):
+    trees = []
+    for _ in tqdm(range(N)):
+        tree = func(g)
+        trees.append(tree)
+    return trees
+
+def make_tree_dict(trees, ds):
+    tree_dict = {}
+    for tree in tqdm(trees):
+        d_dict = {}
+        for d in ds:
+            d_dict[d] = find_balance_edge(tree, d)
+        tree_dict[tree] = d_dict
+    return tree_dict
+
+def make_counting_dict(g, tree_dict, ds):
+    counting_dict = {}
+    for d in ds:
+        counting_dict[d] = {e: 0 for e in g.edges}
+        for tree in tqdm(tree_dict):
+            balance_edges = tree_dict[tree][d]
+            for balance_edge in balance_edges:
+                counting_dict[d][balance_edge] += 1
+    return counting_dict
+
+
+## Plotting functions
+# # how often is this edge snappable?
+# plt.figure(figsize=(dims[1], dims[0])) # this is needed to keep aspect ratio correct
+# plt.tight_layout()
+# nx.draw(g,
+#         pos={(x,y): (x, y) for x,y in g.nodes()},
+#         width=2,
+#         with_labels=False,
+#         node_size=80,
+#         edge_color=[counting_dict[0][e] for e in g.edges()],
+#         edge_cmap=plt.cm.Reds
+#        )
+# sm = plt.cm.ScalarMappable(cmap=plt.cm.Reds)#, norm=plt.Normalize(vmin=0, vmax=1))
+# sm.set_array([])
+# plt.colorbar(sm, fraction=0.046, pad=0.01)
+# plt.show()
+
+# # how often is this edge used in a spanning tree?
+# counter = {}
+# for edge in g.edges: # initialize
+#     counter[edge] = 0
+
+# for tree in tqdm(trees):
+#     for edge in tree.edges:
+#         counter[edge] += 1
+
+# plt.figure(figsize=(dims[1], dims[0])) # this is needed to keep aspect ratio correct
+# plt.tight_layout()
+# nx.draw(g,
+#         pos={(x,y): (x, y) for x,y in g.nodes()},
+#         width=2,
+#         with_labels=False,
+#         node_size=80,
+#         edge_color=[counter[e] for e in g.edges()],
+#         edge_cmap=plt.cm.Reds
+#        )
+# sm = plt.cm.ScalarMappable(cmap=plt.cm.Reds)#, norm=plt.Normalize(vmin=0, vmax=1))
+# sm.set_array([])
+# plt.colorbar(sm, fraction=0.046, pad=0.01)
+# plt.show()
+
+def sample_edge_from_counts(counting_dict):
+    """
+    """
+    edges = list(counting_dict[0].keys())
+    weights = np.array([])
+    total = sum(counting_dict[0].values())
+    for edge in edges:
+        weights = np.append(weights, counting_dict[0][edge]/ total)
+
+    return edges[np.random.choice(len(edges), p=weights)]
+
+def expand_frontier(g, node, cc, other_cc, cc_frontier):
+    """
+        you give me a node that you just added to my cc.
+        i'll add its neighbors to my frontier.
+        but i can't add those neighbors that are in the other cc.
+        and i cant add those neighbors whose addition creates a loop.
+    """
+    valid_neighbors = set().union(g.neighbors(node)).difference(cc.nodes).difference(other_cc.nodes)
+
+    for neighbor in valid_neighbors:
+        cc.add_edge(node, neighbor)
+        if nx.is_tree(cc):
+            cc_frontier.add_edge(node, neighbor)
+        cc.remove_node(neighbor)
+
+def sample_from_frontier(cc, frontier):
+    u, v = random.choice(list(frontier.edges))
+    new_node = None
+    old_node = None
+
+    if u in cc.nodes:
+        new_node = v
+        old_node = u
+    else:
+        new_node = u
+        old_node = v
+
+    return new_node, old_node
+
+def sample_from_frontier_to_cc(g, frontier, cc, other_frontier, other_cc):
+    """
+    """
+    new_node, old_node = sample_from_frontier(cc, frontier)
+
+    cc.add_edge(new_node, old_node)
+    expand_frontier(g, new_node, cc, other_cc, frontier)
+    frontier.remove_edge(new_node, old_node) # do i need to remove the node too? this might cause bugs...
+    if new_node in other_frontier.nodes:
+        other_frontier.remove_node(new_node)
+
+
+def get_furthest_bottleneck_node(g, small_cc, big_cc, src_node, snapped_edge):
+    # get adjacents
+    adjacents = []
+    for node in small_cc.nodes:
+        for neighbor in g.neighbors(node):
+            if neighbor in snapped_edge:
+                continue
+            if neighbor in big_cc.nodes:
+                adjacents.append(neighbor)
+
+    # now get the distance to the adjacents
+    max_node = None
+    max_dist = 0
+    for node in adjacents:
+        pl = nx.shortest_path_length(g, source=src_node, target=node)
+        if pl > max_dist:
+            max_dist = pl
+            max_node = node
+
+    return max_node
+
+def break_bottleneck(g, small_cc, big_cc, snapped_edge, small_cc_frontier, big_cc_frontier):
+    """
+    """
+    src_node = None
+    for node in snapped_edge:
+        if node in big_cc.nodes:
+            src_node = node
+
+    max_node = get_furthest_bottleneck_node(g, small_cc, big_cc,
+                                            src_node, snapped_edge)
+    remove_node(max_node, big_cc, big_cc_frontier, src_node)
+    add_node_to_cc(g, small_cc, max_node)
+    expand_frontier(g, max_node, small_cc, big_cc, small_cc_frontier)
+
+def remove_node(node, cc, cc_frontier, src_node):
+    """
+    """
+    cc.remove_node(node)
+    cc_frontier.remove_node(node)
+
+    # for the case of multiple connected components
+    comps = nx.connected_components(cc)
+
+    to_remove = set()
+    for comp in comps:
+        if src_node not in comp:
+            to_remove = to_remove.union(comp)
+
+    for n in to_remove:
+        cc.remove_node(n)
+        cc_frontier.remove_node(n)
+
+
+def add_node_to_cc(g, cc, node):
+    """
+    """
+    candidates = []
+    for neighbor in g.neighbors(node):
+        if neighbor in cc.nodes:
+            candidates.append(neighbor)
+
+    choice = random.choice(candidates)
+    cc.add_edge(node, choice)
+
+def initialize(g, u, v):
+    """
+    """
+    cc1 = nx.Graph()
+    cc2 = nx.Graph()
+
+    cc1.add_node(u)
+    cc2.add_node(v)
+
+    cc1_frontier = nx.Graph()
+    cc2_frontier = nx.Graph()
+
+    expand_frontier(g, u, cc1, cc2, cc1_frontier)
+    expand_frontier(g, v, cc2, cc1, cc2_frontier)
+
+    return cc1, cc2, cc1_frontier, cc2_frontier
+
+def is_bottlenecked(cc, cc_frontier, target_size):
+    """ returns true if a connected component cannot grow anymore.
+    """
+    return len(cc_frontier.edges) == 0 and len(cc.nodes) < target_size
+
+def trees_correct_sizes(cc1, cc2, target_size):
+    """ Currently only works for exact bisection.
+    """
+    return len(cc1.nodes) == target_size and len(cc2.nodes) == target_size
