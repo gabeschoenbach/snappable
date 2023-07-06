@@ -585,6 +585,12 @@ def expand_frontier(g, node, cc, other_cc, cc_frontier):
         cc.remove_node(neighbor)
 
 def sample_from_frontier(cc, frontier):
+    """ Samples an edge from the frontier and returns it as
+        (new_node, old_node).
+        ``old_node" is the node that already exists in the connecting
+        component, and ``new_node" is the node that is being added to
+        the connecting component.
+    """
     u, v = random.choice(list(frontier.edges))
     new_node = None
     old_node = None
@@ -631,7 +637,8 @@ def get_furthest_bottleneck_node(g, small_cc, big_cc, src_node, snapped_edge):
 
     return max_node
 
-def break_bottleneck(g, small_cc, big_cc, snapped_edge, small_cc_frontier, big_cc_frontier):
+def break_bottleneck(g, small_cc, big_cc, snapped_edge,
+                     small_cc_frontier, big_cc_frontier):
     """
     """
     src_node = None
@@ -675,9 +682,12 @@ def add_node_to_cc(g, cc, node):
     choice = random.choice(candidates)
     cc.add_edge(node, choice)
 
-def initialize(g, u, v):
+def initialize(g, edge):
+    """ Given a graph and a snapped edge, it initializes the connected
+        components and their frontiers, and returns them.
     """
-    """
+    u, v = edge
+
     cc1 = nx.Graph()
     cc2 = nx.Graph()
 
@@ -693,11 +703,15 @@ def initialize(g, u, v):
     return cc1, cc2, cc1_frontier, cc2_frontier
 
 def is_bottlenecked(cc, cc_frontier, target_size):
-    """ returns true if a connected component cannot grow anymore.
+    """ Returns True if a connected component cannot grow anymore.
+        This happens when there are no edges in the frontier but
+        the connected component hasn't met the target_size yet.
     """
     return len(cc_frontier.edges) == 0 and len(cc.nodes) < target_size
 
 def trees_correct_sizes(cc1, cc2, target_size):
-    """ Currently only works for exact bisection.
+    """ Returns True when both the argument connected components are
+        equal to target_size.
+        Currently only works for exact bisection.
     """
     return len(cc1.nodes) == target_size and len(cc2.nodes) == target_size
