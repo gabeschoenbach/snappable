@@ -14,12 +14,15 @@ import time
 
 ##### Visualization functions #####
 
-def draw(graph, delay=0, erase=True, edge_colors=None, node_colors=None):
+def draw(graph, delay=0, erase=True, edge_colors=None, node_colors=None, node_map=None):
     '''
     A way to visualize a graph.
     Input: Networkx graph.
     Output: Plots graph, then waits for a specified delay.
     '''
+    if node_map is not None:
+        graph = nx.relabel_nodes(graph, node_map, copy=False)
+
     (x_dim, y_dim) = get_dim_of_graph(graph)
     size = 0.5 * (x_dim + y_dim)
     plt.figure(figsize=(y_dim,x_dim)) # this is needed to keep aspect ratio correct
@@ -38,6 +41,12 @@ def draw(graph, delay=0, erase=True, edge_colors=None, node_colors=None):
             # **kwargs,
            )
     plt.show()
+
+    # relabel the graph to be as it was
+    if node_map is not None:
+        labels = reverse_dict(node_map)
+        graph = nx.relabel_nodes(graph, labels, copy=False)
+
     if erase:
         time.sleep(delay)
         clear_output(wait=True)
@@ -715,3 +724,9 @@ def trees_correct_sizes(cc1, cc2, target_size):
         Currently only works for exact bisection.
     """
     return len(cc1.nodes) == target_size and len(cc2.nodes) == target_size
+
+def reverse_dict(d):
+    new_dict = dict()
+    for k, v in d.items():
+        new_dict[v] = k
+    return new_dict
