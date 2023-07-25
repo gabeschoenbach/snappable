@@ -161,12 +161,13 @@ def get_dim_of_graph(graph):
     y_dim = max([v for (u,v) in graph.nodes()]) + 1
     return (y_dim, x_dim) # think about why we have to switch...?
 
-def tup(ST):
+def tup(g):
     '''
     Sorts and tuplifies the edges of a graph, so that we can check if
     a spanning tree (uniquely defined by its edges) has already been seen.
+    The edges need to be sorted too i.e (4, 3) -> (3, 4).
     '''
-    return tuple(sorted(ST.edges()))
+    return tuple(sorted(tuple(sorted(edge)) for edge in g.edges))
 
 def get_dim_of_tup(t):
     '''
@@ -342,6 +343,7 @@ def sample_STs(STs, funct, num_trials):
     data = []
     for _ in tqdm(range(num_trials)):
         graph = nx.grid_graph(dim=get_dim_of_tup(STs[0]))
+
         if funct == "UST":
             ST = uniform_random_spanning_tree(graph)
         elif funct == "MST":
