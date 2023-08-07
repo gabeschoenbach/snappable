@@ -732,3 +732,13 @@ def reverse_dict(d):
     for k, v in d.items():
         new_dict[v] = k
     return new_dict
+
+def graph_from_edges(tree):
+    g = nx.Graph()
+    for edge in tree:
+        g.add_edge(edge[0], edge[1])
+    return g
+
+def test_valid_tree(tree, g):
+    assert(len(list(nx.connected_components(tree))) == 1)
+    assert(len(tree.edges) == len(g.nodes)-1)
