@@ -49,7 +49,7 @@ def erase_loop_if_exists(branch, stacks, g):
         pass
 
 def loop_exists(g):
-    """ Returns True if cycle exists in graph g.
+    """ Returns True if a cycle exists in graph g.
     """
     try:
         cycle = nx.find_cycle(g)
