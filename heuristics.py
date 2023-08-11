@@ -36,7 +36,7 @@ def run_experiment(kind, trials):
     with open(f"heuristics/{kind}_{trials}.csv", "a") as f:
         f.write("size,proportion_snaps\n")
     
-    for size in [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048]:
+    for size in [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096]:
         proportion = count_snaps(trials, size, kind)
         with open(f"heuristics/{kind}_{trials}.csv", "a") as f:
             f.write(f"{size},{proportion}\n")
