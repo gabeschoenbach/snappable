@@ -116,7 +116,7 @@ def uniform_random_spanning_tree(graph, choice=random.choice):
     assert len(G.edges) == len(G.nodes) - 1
     assert nx.number_connected_components(G) == 1
 
-    G = make_ST_from_tup(tup(G))
+    # G = make_ST_from_tup(tup(G)) # why is this here?
 
     return G
 
